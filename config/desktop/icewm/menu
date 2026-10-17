@@ -1,0 +1,2 @@
+prog "Terminal" xterm xterm
+prog "File Manager" spacefm spacefm

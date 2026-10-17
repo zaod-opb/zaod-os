@@ -1,0 +1,14 @@
+# Proposed antiX/Debian package names. Resolve versions and availability against
+# the antiX-26.1 repositories before building an image.
+xorg
+icewm
+icewm-common
+spacefm
+xterm
+alsa-utils
+pciutils
+usbutils
+rfkill
+iw
+v4l-utils
+bluez

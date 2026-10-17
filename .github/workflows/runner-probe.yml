@@ -1,0 +1,83 @@
+name: ZAOD runner capability probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install ISO and filesystem tools
+        run: |
+          set -euo pipefail
+          sudo -n true
+          sudo -n apt-get update
+          sudo -n apt-get install --yes --no-install-recommends \
+            e2fsprogs squashfs-tools xorriso
+
+      - name: Check prerequisite report
+        run: |
+          set -euo pipefail
+          MIN_FREE_GIB=5 sudo -n env MIN_FREE_GIB=5 \
+            bash scripts/check-prerequisites.sh "$RUNNER_TEMP"
+
+      - name: Probe loop filesystem mount
+        run: |
+          set -euo pipefail
+          probe_dir=$(mktemp -d "$RUNNER_TEMP/zaod-loop-probe.XXXXXX")
+          loop_device=
+          mounted=0
+          cleanup() {
+            if [[ $mounted -eq 1 ]]; then
+              sudo -n umount "$probe_dir/mnt" || true
+            fi
+            if [[ -n $loop_device ]]; then
+              sudo -n losetup --detach "$loop_device" || true
+            fi
+            rm -rf -- "$probe_dir"
+          }
+          trap cleanup EXIT
+
+          mkdir "$probe_dir/mnt"
+          truncate -s 64M "$probe_dir/probe.ext4"
+          sudo -n mkfs.ext4 -q -F "$probe_dir/probe.ext4"
+          loop_device=$(sudo -n losetup --find --show "$probe_dir/probe.ext4")
+          sudo -n mount "$loop_device" "$probe_dir/mnt"
+          mounted=1
+          sudo -n touch "$probe_dir/mnt/probe-marker"
+          sudo -n test -f "$probe_dir/mnt/probe-marker"
+          sudo -n umount "$probe_dir/mnt"
+          mounted=0
+          sudo -n losetup --detach "$loop_device"
+          loop_device=
+          printf 'PASS: loop device attach, ext4 mount, write, unmount, and detach\n'
+
+      - name: Probe squashfs round trip
+        run: |
+          set -euo pipefail
+          probe_dir=$(mktemp -d "$RUNNER_TEMP/zaod-squashfs-probe.XXXXXX")
+          trap 'rm -rf -- "$probe_dir"' EXIT
+          mkdir "$probe_dir/input"
+          printf 'ZAOD runner probe\n' > "$probe_dir/input/marker"
+          mksquashfs "$probe_dir/input" "$probe_dir/probe.squashfs" \
+            -noappend -comp xz -processors 1
+          unsquashfs -d "$probe_dir/output" "$probe_dir/probe.squashfs"
+          cmp "$probe_dir/input/marker" "$probe_dir/output/marker"
+
+      - name: Probe ISO generation
+        run: |
+          set -euo pipefail
+          probe_dir=$(mktemp -d "$RUNNER_TEMP/zaod-iso-probe.XXXXXX")
+          trap 'rm -rf -- "$probe_dir"' EXIT
+          mkdir "$probe_dir/input"
+          printf 'ZAOD runner probe\n' > "$probe_dir/input/marker"
+          xorriso -as mkisofs -quiet -o "$probe_dir/probe.iso" "$probe_dir/input"
+          test -s "$probe_dir/probe.iso"
+          xorriso -indev "$probe_dir/probe.iso" -toc

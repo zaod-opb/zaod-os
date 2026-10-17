@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101c29"/>
+      <stop offset="0.58" stop-color="#183746"/>
+      <stop offset="1" stop-color="#17312e"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f2be62"/>
+      <stop offset="1" stop-color="#e78155"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#b4d0c5" stroke-opacity=".055"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#field)"/>
+  <rect width="1920" height="1080" fill="url(#grid)"/>
+  <path d="M1120 0h800v1080h-386c-136-188-220-401-277-627-34-137-79-290-137-453Z" fill="#b7d5c5" fill-opacity=".055"/>
+  <path d="M1235 0h108c63 188 109 347 150 508 55 217 128 395 251 572h-153c-117-175-184-355-238-569-43-170-85-330-118-511Z" fill="url(#ribbon)"/>
+  <path d="M0 888c250-104 478-142 705-112 142 19 267 65 396 109v195H0Z" fill="#0b151e" fill-opacity=".45"/>
+  <g fill="#f5f1e8" font-family="sans-serif">
+    <text x="172" y="482" font-size="32" letter-spacing="3" fill="#f2be62">LIGHTWEIGHT LINUX</text>
+    <text x="160" y="625" font-size="126" font-weight="700">ZAOD</text>
+    <path d="M164 667h166v8H164z" fill="url(#ribbon)"/>
+    <text x="170" y="730" font-size="29" fill="#d2e0dc">A clear start. A lighter system.</text>
+  </g>
+</svg>

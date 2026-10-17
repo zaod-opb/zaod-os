@@ -1,0 +1,6 @@
+/build/
+/output/
+*.iso
+*.iso.*
+*.swp
+*~
