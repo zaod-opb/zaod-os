@@ -1,32 +1,33 @@
 # Known limitations
 
-## Phase 1 blockers
+## Phase 1 status and remaining gaps
 
-- The repository has no reproducible image-construction workflow or
-  `scripts/build-iso.sh`. antiX's current live-remaster utility does not produce
-  an ISO, and the upstream legacy ISO remaster script has not been shown to work
-  with antiX-26.1.
-- No antiX base ISO was downloaded, signature-verified, customized, or built in
-  this environment.
-- No ISO integrity check, VM boot, live desktop startup, installation, or USB
-  boot test has been performed.
-- The proposed package names/dependencies and overlay paths have not been
-  checked against an antiX-26.1 Core session. In particular, IceWM startup,
-  wallpaper rendering, session launch, network UI, and live-user behavior need
-  integration testing.
-- Boot-menu branding is deferred until the exact antiX-26.1 boot layout and
-  supported modification method are verified. Existing antiX boot files must
-  not be replaced speculatively.
-- The wallpaper and source configuration are not yet installed into any image.
+- The GitHub Actions capability probe and artifact build workflow are registered
+  but have not run. This workspace's integration returned HTTP 403 when
+  dispatching the probe. The local image build and loop/mount operations did
+  succeed.
+- QEMU/KVM booted the corrected ISO through its boot menu to the antiX login
+  console with 2 GiB guest RAM. The first image had D-Bus execute-bit damage
+  from `/tmp`'s default ACL; the builder now clears that ACL before extraction,
+  and the corrected image preserved `0755` D-Bus and runit executables.
+- Authenticated login, `startx`, IceWM, file-manager/terminal launch, and network
+  behavior remain unverified. QEMU HMP key injection dropped characters while
+  interacting with the login prompt. The image is not claimed to have passed a
+  desktop-start test.
+- Boot-menu artwork remains antiX branded. Only ZAOD wallpaper and live-user
+  IceWM defaults are integrated; BIOS/UEFI boot files and configs remain
+  unchanged.
+- The generated ISO remains under `/tmp/zaod-os-build/final/` in the current
+  Codespaces instance. It was not committed or uploaded as a workflow artifact.
 
 ## Environment and hardware
 
-The present host is Ubuntu 24.04 in a non-root container. Passwordless `sudo`
-successfully mounted a disposable loop-backed filesystem, but `xorriso` and
-squashfs tools are absent. The workspace filesystem reports about 18 GiB
-available. The GitHub-hosted runner probe has not run yet. The development
-device's FydeOS storage constraints and the target's 2 GB RAM / 8 GB storage
-have not been measured or validated by a built system.
+The present host is Ubuntu 24.04 x86_64 in a Codespaces container. Passwordless
+`sudo` and loop mounts work. `/tmp` had 41.16 GB free before the build and the
+customized SquashFS reports 2.62 GiB uncompressed; the output ISO is 880 MiB.
+Target 2 GB RAM / 8 GB storage, live memory use, startup time, installed size,
+and sustained performance have not been measured. A 2 GiB QEMU boot reached the
+login console but does not establish hardware compatibility.
 
 No target hardware has been tested. Firmware gaps, unsupported chipsets,
 graphics acceleration, wireless behavior, suspend/resume, and power management

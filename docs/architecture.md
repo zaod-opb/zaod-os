@@ -9,22 +9,23 @@ window manager. The kernel, init system, bootloader files, firmware, device
 drivers, installer/recovery tools, and live boot behavior must remain from the
 verified antiX base unless a specific, tested change is justified.
 
-antiX Core is the minimal starting flavor. The desktop overlay is planned to
-add X.Org, IceWM, SpaceFM, and XTerm, plus small hardware diagnostic utilities.
-Network and live-session services should remain those supported by the selected
-antiX image; ZAOD must not replace its init/service model or remove firmware to
-save space.
+antiX Core is the minimal starting flavor. The overlay adds the X server,
+`xinit`, IceWM, SpaceFM, and XTerm, plus small hardware diagnostic utilities.
+The manifest was resolved against the base's Debian Trixie and antiX repositories
+and installed in the built rootfs. Network and live-session services remain
+those of antiX; ZAOD does not replace the runit init model or remove firmware.
 
 ## Source tree
 
 - `branding/zaod-wallpaper.svg`: original ZAOD artwork, not a third-party asset.
-- `config/packages/desktop.txt`: proposed package additions. Names and
-  dependencies must be checked against the antiX-26.1 repositories before use.
+- `config/packages/desktop.txt`: tested package additions for the antiX 26.1
+  rootfs.
 - `config/desktop/xinitrc`: starts the IceWM session from `startx`.
 - `config/desktop/icewm/`: initial IceWM menu and preferences, aligned with the
   file layout used by antiX's `desktop-defaults-icewm` package.
-- `scripts/`: non-destructive host checks, ISO verification, and hardware
-  collection. No script currently creates a customized ISO.
+- `scripts/build-iso.sh`: verifies and extracts the signed base, updates only its
+  live SquashFS, and replays the base boot metadata into a new ISO.
+- `scripts/`: prerequisite, ISO integrity, and hardware diagnostics.
 - `tests/`: smoke checks for shell syntax and the checked-in configuration.
 - `docs/`: reproducibility, architecture, validation, and known gaps.
 
@@ -35,9 +36,10 @@ directories would imply components that do not exist.
 ## Intended runtime
 
 The configured session uses `startx` and `icewm-session`; it does not install a
-display manager or start X automatically. A working live-image integration must
-provide an explicit, tested way to start that session without overriding antiX
-login, init, or live boot behavior. The file manager and terminal are separate
+display manager or start X automatically. The `.xinitrc`, IceWM menu, preferences,
+and PNG wallpaper are placed in `/etc/skel` or the shared background directory.
+The ISO booted to the antiX login prompt, but an authenticated session and
+`startx` have not yet been verified. The file manager and terminal are separate
 menu entries.
 
 ## Licensing and provenance
@@ -51,9 +53,14 @@ copied into this repository.
 
 ## Build boundary
 
-The upstream antiX `live-remaster` program documents saving changes into a
-running live filesystem. That is not, by itself, a reproducible ISO constructor.
-The older `remaster.sh` found in the upstream remaster repository describes
-legacy ISO remastering and has not been validated for antiX-26.1. Until a
-release-compatible construction method is established and tested, there is no
-`build-iso.sh` and no claim that the overlay can be applied to the base image.
+AntiX documents `live-remaster` for a running live system and `iso-snapshot` for
+creating an image from a running system; neither constructs a remaster from the
+downloaded Core ISO. The separate antiX `Build-iso` project builds from its own
+Debian/template inputs. ZAOD therefore uses a custom, locally validated
+transformation: extract `/antiX/linuxfs`, retain its zstd compression, 256 KiB
+blocks, xattrs and exportability, then update only that member plus its size and
+MD5 metadata in the original ISO. xorriso's documented `-boot_image any replay`
+replays El Torito and system-area provisions. The builder checks BIOS, UEFI,
+isohybrid MBR/GPT, ISO volume ID, and byte-identical boot configuration/EFI files
+before accepting the result. This method is not endorsed by antiX and needs
+continued testing across future releases.

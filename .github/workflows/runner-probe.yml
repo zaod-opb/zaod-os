@@ -20,12 +20,12 @@ jobs:
           sudo -n true
           sudo -n apt-get update
           sudo -n apt-get install --yes --no-install-recommends \
-            e2fsprogs squashfs-tools xorriso
+            acl e2fsprogs librsvg2-bin squashfs-tools xorriso
 
       - name: Check prerequisite report
         run: |
           set -euo pipefail
-          MIN_FREE_GIB=5 sudo -n env MIN_FREE_GIB=5 \
+          sudo -n env MIN_FREE_GIB=5 \
             bash scripts/check-prerequisites.sh "$RUNNER_TEMP"
 
       - name: Probe loop filesystem mount

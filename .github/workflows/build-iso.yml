@@ -1,0 +1,82 @@
+name: Build ZAOD OS ISO
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      BASE_NAME: antiX-26.1_x64-core.iso
+      SIGNING_KEY_ID: A80582E000067FDD
+      SIGNING_KEY_FINGERPRINT: 30AA418A0C723D937B50A986A80582E000067FDD
+    steps:
+      - name: Check out ZAOD source
+        uses: actions/checkout@v4
+
+      - name: Install verified build dependencies
+        run: |
+          set -euo pipefail
+          sudo -n apt-get update
+          sudo -n apt-get install --yes --no-install-recommends \
+            acl curl dirmngr e2fsprogs gnupg librsvg2-bin squashfs-tools xorriso
+
+      - name: Check root, loop, tool, and space prerequisites
+        run: |
+          set -euo pipefail
+          sudo -n env MIN_FREE_GIB=10 \
+            bash scripts/check-prerequisites.sh "$RUNNER_TEMP"
+
+      - name: Download official antiX 26.1 Core files
+        run: |
+          set -euo pipefail
+          base_url=https://mxlinux.mirror.liquidtelecom.com/isos/ANTIX/Final/antiX-26.1
+          curl --fail --location --retry 3 --silent --show-error \
+            --output "$RUNNER_TEMP/$BASE_NAME" "$base_url/$BASE_NAME"
+          curl --fail --location --retry 3 --silent --show-error \
+            --output "$RUNNER_TEMP/$BASE_NAME.sha256" "$base_url/$BASE_NAME.sha256"
+          curl --fail --location --retry 3 --silent --show-error \
+            --output "$RUNNER_TEMP/$BASE_NAME.sig" "$base_url/$BASE_NAME.sig"
+
+      - name: Import and authenticate antiX signing key
+        env:
+          GNUPGHOME: ${{ runner.temp }}/zaod-gnupg
+        run: |
+          set -euo pipefail
+          install -d -m 0700 "$GNUPGHOME"
+          keyring="$RUNNER_TEMP/trustedkeys.gpg"
+          gpg --no-default-keyring --keyring "gnupg-ring:$keyring" \
+            --keyserver hkps://keys.openpgp.org --recv-keys "$SIGNING_KEY_ID"
+          fingerprint=$(gpg --no-default-keyring --keyring "gnupg-ring:$keyring" \
+            --with-colons --fingerprint "$SIGNING_KEY_ID" \
+            | awk -F: '$1 == "fpr" { print $10; exit }')
+          test "$fingerprint" = "$SIGNING_KEY_FINGERPRINT"
+          printf 'Verified antiX signing fingerprint: %s\n' "$fingerprint"
+
+      - name: Build and verify ZAOD ISO
+        run: |
+          set -euo pipefail
+          output="$RUNNER_TEMP/zaod-os-26.1-x86_64.iso"
+          sudo -n env TMPDIR="$RUNNER_TEMP" MIN_FREE_GIB=10 SQUASHFS_PROCESSORS=2 \
+            bash scripts/build-iso.sh \
+            "$RUNNER_TEMP/$BASE_NAME" \
+            "$RUNNER_TEMP/$BASE_NAME.sha256" \
+            "$RUNNER_TEMP/$BASE_NAME.sig" \
+            "$RUNNER_TEMP/trustedkeys.gpg" \
+            "$output"
+          scripts/verify-iso.sh "$output" "$output.sha256"
+          sha256sum --check "$output.sha256"
+
+      - name: Publish ISO as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zaod-os-26.1-x86_64
+          path: |
+            ${{ runner.temp }}/zaod-os-26.1-x86_64.iso
+            ${{ runner.temp }}/zaod-os-26.1-x86_64.iso.sha256
+          if-no-files-found: error
+          retention-days: 14

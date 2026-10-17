@@ -35,7 +35,7 @@ else
     fail 'Linux host required'
 fi
 
-for utility in xorriso unsquashfs mksquashfs sha256sum gpg chroot mount umount losetup; do
+for utility in xorriso unsquashfs mksquashfs sha256sum gpg gpgv chroot mount umount losetup setfacl rsvg-convert; do
     if command -v "$utility" >/dev/null 2>&1; then
         pass "command available: $utility"
     else

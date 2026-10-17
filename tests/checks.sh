@@ -4,10 +4,13 @@ set -euo pipefail
 repo_root=$(cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_root"
 
-bash -n scripts/check-prerequisites.sh scripts/verify-iso.sh scripts/collect-hardware-info.sh
-bash -n tests/checks.sh
+for script in scripts/check-prerequisites.sh scripts/verify-iso.sh scripts/collect-hardware-info.sh scripts/build-iso.sh tests/checks.sh; do
+    bash -n "$script"
+done
+grep -q 'setfacl -k -- "$work_dir"' scripts/build-iso.sh
+grep -q 'rsvg-convert --output=' scripts/build-iso.sh
 grep -q 'exec icewm-session' config/desktop/xinitrc
-grep -q 'zaod-wallpaper.svg' config/desktop/icewm/preferences
+grep -q 'zaod-wallpaper.png' config/desktop/icewm/preferences
 grep -q '^TaskBarShowMEMStatus=0$' config/desktop/icewm/preferences
 test -s branding/zaod-wallpaper.svg
 grep -q 'xorg' config/packages/desktop.txt

@@ -1,6 +1,10 @@
 # Proposed antiX/Debian package names. Resolve versions and availability against
-# the antiX-26.1 repositories before building an image.
-xorg
+# Minimal antiX 26.1 Trixie desktop and hardware utility additions.
+xserver-xorg-core
+xinit
+xserver-xorg-input-libinput
+xserver-xorg-video-fbdev
+xserver-xorg-video-vesa
 icewm
 icewm-common
 spacefm

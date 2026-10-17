@@ -2,5 +2,5 @@ TaskBarShowClock=1
 TaskBarShowCPUStatus=0
 TaskBarShowMEMStatus=0
 TaskBarShowNetStatus=0
-DesktopBackgroundImage="/usr/share/backgrounds/zaod-os/zaod-wallpaper.svg"
+DesktopBackgroundImage="/usr/share/backgrounds/zaod-os/zaod-wallpaper.png"
 DesktopBackgroundScaled=1
