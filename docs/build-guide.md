@@ -94,8 +94,11 @@ sudo -n env TMPDIR=/tmp MIN_FREE_GIB=10 SQUASHFS_PROCESSORS=2 \
 
 The final tested output was 923,074,560 bytes (880 MiB), with SHA-256
 `c78c012049a8fad906391c328561d3c381044a76022dd6a1d301083fa2c450b1`. Its
-`/antiX/linuxfs` MD5 companion also passed. The artifact remains in temporary
-storage; it is not committed or published through Actions.
+`/antiX/linuxfs` MD5 companion also passed. The ISO and sidecar are copied into
+the workspace's `output/` directory for local access. That directory is ignored
+by Git; GitHub rejects regular Git blobs over 100 MiB, so this 880 MiB ISO is
+not committed. The manual Actions workflow can publish it as a downloadable
+artifact after it is run.
 
 QEMU 8.2.2 successfully used KVM with a 2 GiB guest and read-only CD, no virtual
 disk, or USB. The corrected ISO booted through its menu to the antiX login

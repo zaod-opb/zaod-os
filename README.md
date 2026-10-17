@@ -10,7 +10,9 @@ This repository contains an executable ISO builder, initial IceWM configuration,
 original wallpaper artwork, hardware diagnostics, and integrity checks. A local
 build from the signed antiX base produced a checksum-verified ISO that boots in
 QEMU/KVM to the antiX login console. IceWM login/startup, GitHub Actions, and
-physical hardware remain unverified. See [known limitations](docs/limitations.md).
+physical hardware remain unverified. The local ISO and checksum are in
+`output/`; the generated files are intentionally git-ignored. See
+[known limitations](docs/limitations.md).
 
 ## Base system
 

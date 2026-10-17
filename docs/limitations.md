@@ -17,8 +17,10 @@
 - Boot-menu artwork remains antiX branded. Only ZAOD wallpaper and live-user
   IceWM defaults are integrated; BIOS/UEFI boot files and configs remain
   unchanged.
-- The generated ISO remains under `/tmp/zaod-os-build/final/` in the current
-  Codespaces instance. It was not committed or uploaded as a workflow artifact.
+- The generated ISO is visible in the workspace's ignored `output/` directory.
+  Its 880 MiB size exceeds GitHub's 100 MiB regular Git file limit, so the binary
+  is not committed; use the Actions artifact workflow for repository-hosted
+  download after a successful run.
 
 ## Environment and hardware
 
